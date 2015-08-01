@@ -40,7 +40,7 @@ local function xconstruct(pos)
 
 	for i=1, #def do
 		nodebtn[#nodebtn+1] = "item_image_button["..(i-1)..
-			",0.5;1,1;xdecor:"..def[i][1].."_cloud;"..def[i][1]..";]"
+				",0.5;1,1;xdecor:"..def[i][1].."_cloud;"..def[i][1]..";]"
 	end
 	nodebtn = table.concat(nodebtn)
 
@@ -52,19 +52,19 @@ local function xconstruct(pos)
 		"image[1,2;1,1;xdecor_saw.png]"..
 		"label[2,1.5;Output]"..
 		"list[current_name;output;2,2;1,1;]"..
-		"label[4.5,1.5;Damaged tool]"..
-		"list[current_name;src;5,2;1,1;]"..
+		"label[5,1.5;Tool]"..
+		"list[current_name;tool;5,2;1,1;]"..
 		"image[6,2;1,1;xdecor_anvil.png]"..
 		"label[6.8,1.5;Hammer]]"..
-		"list[current_name;fuel;7,2;1,1;]"..
+		"list[current_name;hammer;7,2;1,1;]"..
 		"list[current_player;main;0,3.25;8,4;]")
 	meta:set_string("infotext", "Work Table")
 
 	local inv = meta:get_inventory()
 	inv:set_size("output", 1)
 	inv:set_size("input", 1)
-	inv:set_size("src", 1)
-	inv:set_size("fuel", 1)
+	inv:set_size("tool", 1)
+	inv:set_size("hammer", 1)
 end
 
 local function xfields(pos, formname, fields, sender)
@@ -81,7 +81,7 @@ local function xfields(pos, formname, fields, sender)
 		local w = def[n]
 
 		if (inputstack:get_name() == "default:"..v) and
-			(outputstack:get_count() < 99) and fields[w[1]] then
+				(outputstack:get_count() < 99) and fields[w[1]] then
 			shape = "xdecor:"..w[1].."_"..v
 			anz = w[2]
 			get = shape.." "..anz
@@ -99,7 +99,7 @@ local function xdig(pos, player)
 	local inv = meta:get_inventory()
 
 	if not inv:is_empty("input") or not inv:is_empty("output") or not
-		inv:is_empty("fuel") or not inv:is_empty("src") then
+			inv:is_empty("fuel") or not inv:is_empty("src") then
 		return false
 	end
 	return true
@@ -112,14 +112,14 @@ local function xput(pos, listname, index, stack, player)
 	if listname == "output" then
 		return 0
 	end
-	if listname == "fuel" then
+	if listname == "hammer" then
 		if stack:get_name() == "xdecor:hammer" then
-			return stack:get_count()
+			return 1
 		else
 			return 0
 		end
 	end
-	if listname == "src" then
+	if listname == "tool" then
 		local tname = stack:get_name()
 		local tdef = minetest.registered_tools[tname]
 		local twear = stack:get_wear()
@@ -158,7 +158,7 @@ end
 
 local function sound(mat)
 	if string.find(mat, "glass") or string.find(mat, "lamp") or
-		string.find(mat, "ice") then
+			string.find(mat, "ice") then
 		return default.node_sound_glass_defaults()
 	elseif string.find(mat, "wood") or string.find(mat, "tree") then
 		return default.node_sound_wood_defaults()
@@ -192,11 +192,11 @@ for m=1, #material do
 		local w = def[n]
 		xdecor.register(w[1].."_"..v, {
 			description = string.sub(string.upper(w[1]), 0, 1)..
-				string.sub(w[1], 2),
+					string.sub(w[1], 2),
 			light_source = light,
 			sounds = sound,
 			tiles = {tile},
-			groups = {snappy=2, cracky=2, not_in_creative_inventory=1},
+			groups = {snappy=2, cracky=3, not_in_creative_inventory=1},
 			node_box = {
 				type = "fixed",
 				fixed = w[3]
@@ -206,29 +206,29 @@ for m=1, #material do
 	end
 end
 
-minetest.register_abm({ -- Repair Tool's code by Krock, modified by kilbith.
+minetest.register_abm({
 	nodenames = {"xdecor:worktable"},
-	interval = 5, chance = 1,
+	interval = 2, chance = 1,
 	action = function(pos, node, active_object_count, active_object_count_wider)
 		local meta = minetest.get_meta(pos)
 		local inv = meta:get_inventory()
-		local src = inv:get_stack("src", 1)
-		local wear = src:get_wear()
-		local repair = -1400
+		local tool = inv:get_stack("tool", 1)
+		local hammer = inv:get_stack("hammer", 1)
+		local wear = tool:get_wear()
+		local wear2 = hammer:get_wear()
 
-		if (src:is_empty() or wear == 0 or wear == 65535) then return end
+		local repair = -500 -- Tool's repairing factor (higher in negative means greater repairing).
+		local wearhammer = 250 -- Hammer's wearing factor (higher in positive means greater wearing).
 
-		local fuel = inv:get_stack("fuel", 1)
-		if (fuel:is_empty() or fuel:get_name() ~= "xdecor:hammer") then
-		return end
+		if (tool:is_empty() or wear == 0 or wear == 65535) then return end
 
-		if (wear + repair < 0) then
-			src:add_wear(repair + wear)
-		else
-			src:add_wear(repair)
-		end
+		if (hammer:is_empty() or hammer:get_name() ~= "xdecor:hammer") then
+			return end
 
-		inv:set_stack("src", 1, src)
-		inv:remove_item("fuel", "xdecor:hammer 1")
+		tool:add_wear(repair)
+		hammer:add_wear(wearhammer)
+
+		inv:set_stack("tool", 1, tool)
+		inv:set_stack("hammer", 1, hammer)
 	end
 })
