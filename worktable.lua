@@ -52,7 +52,7 @@ local function xconstruct(pos)
 		"image[1,2;1,1;xdecor_saw.png]"..
 		"label[2,1.5;Output]"..
 		"list[current_name;output;2,2;1,1;]"..
-		"label[5,1.5;Tool]"..
+		"label[4.5,1.5;Damaged tool]"..
 		"list[current_name;src;5,2;1,1;]"..
 		"image[6,2;1,1;xdecor_anvil.png]"..
 		"label[6.8,1.5;Hammer]]"..
@@ -114,7 +114,7 @@ local function xput(pos, listname, index, stack, player)
 	end
 	if listname == "fuel" then
 		if stack:get_name() == "xdecor:hammer" then
-			return 1
+			return stack:get_count()
 		else
 			return 0
 		end
@@ -213,26 +213,22 @@ minetest.register_abm({ -- Repair Tool's code by Krock, modified by kilbith.
 		local meta = minetest.get_meta(pos)
 		local inv = meta:get_inventory()
 		local src = inv:get_stack("src", 1)
-		local fuel = inv:get_stack("fuel", 1)
 		local wear = src:get_wear()
-		local wear2 = fuel:get_wear()
 		local repair = -1400
-		local whammer = 700
 
 		if (src:is_empty() or wear == 0 or wear == 65535) then return end
 
+		local fuel = inv:get_stack("fuel", 1)
 		if (fuel:is_empty() or fuel:get_name() ~= "xdecor:hammer") then
 		return end
 
 		if (wear + repair < 0) then
 			src:add_wear(repair + wear)
-			fuel:add_wear(whammer + wear2)
 		else
 			src:add_wear(repair)
-			fuel:add_wear(whammer)
 		end
 
 		inv:set_stack("src", 1, src)
-		inv:set_stack("fuel", 1, fuel)
+		inv:remove_item("fuel", "xdecor:hammer 1")
 	end
 })

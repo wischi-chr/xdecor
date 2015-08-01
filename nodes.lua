@@ -316,6 +316,7 @@ xdecor.register("fire", {
 
 minetest.register_tool("xdecor:flint_steel", {
 	description = "Flint & Steel",
+	stack_max = 1, 
 	inventory_image = "xdecor_flint_steel.png",
 	tool_capabilities = {
 		groupcaps = {
@@ -339,17 +340,6 @@ minetest.register_tool("xdecor:flint_steel", {
 		itemstack:add_wear(65535/65)
 		return itemstack
 	end
-})
-
-minetest.register_tool("xdecor:hammer", {
-	description = "Hammer",
-	inventory_image = "xdecor_hammer.png",
-	tool_capabilities = {
-		groupcaps = {
-			cracky = { times={[1]=4.00, [2]=1.60, [3]=0.80}, uses=20, maxlevel=2 }
-		},
-		damage_groups = {fleshy=4}
-	}
 })
 
 xdecor.register("ivy", {
