@@ -1,7 +1,7 @@
 local material = {
 	"cloud", -- Only used for the formspec display.
-	"wood", "junglewood", "pinewood",
-	"tree", "jungletree", "pinetree",
+	"wood", "junglewood", "pinewood", "acacia_wood",
+	"tree", "jungletree", "pinetree", "acacia_tree",
 	"cobble", "mossycobble", "desert_cobble",
 	"stone", "sandstone", "desert_stone", "obsidian",
 	"stonebrick", "sandstonebrick", "desert_stonebrick", "obsidianbrick",
@@ -135,26 +135,28 @@ for m=1, #material do
 		local w = def[n]
 		local nodename = "default:"..v
 		local ndef = minetest.registered_nodes[nodename]
-
-		xdecor.register(w[1].."_"..v, {
-			description = string.sub(string.upper(w[1]), 0, 1)..
-					string.sub(w[1], 2),
-			light_source = ndef.light_source,
-			sounds = ndef.sounds,
-			tiles = ndef.tiles,
-			groups = {snappy=3, not_in_creative_inventory=1},
-			node_box = {
-				type = "fixed",
-				fixed = w[3]
-			},
-			on_place = minetest.rotate_node
-		})
+		
+		if ndef then
+			xdecor.register(w[1].."_"..v, {
+				description = string.sub(string.upper(w[1]), 0, 1)..
+						string.sub(w[1], 2),
+				light_source = ndef.light_source,
+				sounds = ndef.sounds,
+				tiles = ndef.tiles,
+				groups = {snappy=3, not_in_creative_inventory=1},
+				node_box = {
+					type = "fixed",
+					fixed = w[3]
+				},
+				on_place = minetest.rotate_node
+			})
+		end
 	end
 end
 
 minetest.register_abm({
 	nodenames = {"xdecor:worktable"},
-	interval = 2, chance = 1,
+	interval = 3, chance = 1,
 	action = function(pos, node, active_object_count, active_object_count_wider)
 		local meta = minetest.get_meta(pos)
 		local inv = meta:get_inventory()
